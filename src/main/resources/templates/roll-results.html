@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8" />
+	<title>Title</title>
+</head>
+<body>
+
+<h1>Roll Results...</h1>
+
+<h3>the user guessed <span th:text="${userGuess}"></span></h3>
+<h3>the answer is <span th:text="${answer}"></span></h3>
+<h3 th:if="${userGuess == answer}">You Guessed Correctly!</h3>
+<h3 th:if="${userGuess != answer}">You Guessed Inorrectly!</h3>
+
+</body>
+</html>
