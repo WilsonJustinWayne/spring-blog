@@ -1,30 +1,33 @@
 package com.blog.blog.controllers;
 
-import com.blog.blog.Post;
-import com.blog.blog.services.PostService;
+import com.blog.blog.models.Post;
+import com.blog.blog.models.User;
+import com.blog.blog.repositories.PostsRepo;
+import com.blog.blog.repositories.UsersRepo;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Controller
 public class PostController {
-    private final PostService postService = new PostService();
+    private PostsRepo postsRepo;
+    private UsersRepo usersRepo;
 
-    public PostController() {
+    public PostController(PostsRepo postsRepo, UsersRepo usersRepo) {
+        this.postsRepo = postsRepo;
+        this.usersRepo = usersRepo;
     }
 
     @GetMapping("/posts")
     private String postsIndexPage(Model viewModel) {
-        viewModel.addAttribute("posts", postService.findAll());
+        viewModel.addAttribute("posts", postsRepo.findAll());
         return "posts/index";
     }
 
     @GetMapping("/posts/{id}")
     private String postsIndividualPage(@PathVariable long id, Model viewModel) {
-        viewModel.addAttribute("post", postService.findOne(id));
+        viewModel.addAttribute("post", postsRepo.findOne(id));
         return "posts/show";
     }
 
@@ -36,27 +39,25 @@ public class PostController {
 
     @PostMapping("/posts/create")
     private String postsCreateSendPage(
-            @RequestParam(name = "title") String title,
-            @RequestParam(name = "body") String body) {
-        addPost(title, body);
+     @ModelAttribute Post post) {
+        addPost(post);
         return "redirect:/posts";
     }
 
     @GetMapping("/posts/{id}/edit")
     private String postsEditViewPage(@PathVariable long id,Model viewModel) {
-        viewModel.addAttribute("post", postService.findOne(id));
+        viewModel.addAttribute("post", postsRepo.findOne(id));
         return "posts/create";
     }
 
     @PostMapping("/posts/{id}/edit")
-    private String postsEditSendPage(
-            @RequestParam(name = "title") String title,
-            @RequestParam(name = "body") String body) {
-        addPost(title, body);
+    private String postsEditSendPage(@ModelAttribute Post post) {
+        addPost(post);
         return "redirect:/posts";
     }
 
-    private Long addPost(String title, String body) {
-        return postService.save(new Post(title, body)).getId();
+    private Long addPost(Post post) {
+        post.setUser((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        return postsRepo.save(post).getId();
     }
 }
